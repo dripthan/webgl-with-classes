@@ -22,11 +22,9 @@ precision highp float;
 
 out vec4 outColor;
 
-uniform vec3 quadColor;
-
 void main()
 {
-  outColor = vec4(quadColor, 1.0);
+  outColor = vec4(1.0, 1.0, 1.0, 1.0);
 }
 
 `;
@@ -49,42 +47,23 @@ const quadIndices = [
 
 const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl2');
-const mouse = { x: 0, y: 0, down: false };
+const keys = [];
 const shader = new Shader(vsSource, fsSource);
 const loader = new Loader();
 const renderer = new Renderer();
 const quad = loader.loadVAO(quadPositions, quadIndices);
-const entities = [];
+const entities = [new Entity(
+  [0, 0, 0],
+  [0, 0, 0],
+  [1, 1, 1],
+  [0, 0, 0],
+  [0, 0.02, 0.01],
+  [0, 0, 0]
+)];
 
 // loop
 
 const loop = () => {
-
-  if (mouse.down) {
-    for (let i = 0; i < 50; i++) {
-      entities.push(new Entity(
-        mouse.x,
-        mouse.y,
-        0,
-        0.25,
-        Date.now() * 0.05,
-        Math.random() * Math.PI * 2,
-        Math.random() * 0.1,
-        (Math.random() - 0.5) * 0.5,
-        Math.random() * -0.01 - 0.0025,
-        2,
-        (Math.random() - 0.5) * 0.1,
-        -0.0025
-      ));
-    }
-  }
-
-  for (let i = entities.length - 1; i >= 0; --i) {
-    const e = entities[i];
-    if (e.scale < 0) {
-      entities.splice(i, 1);
-    }
-  }
 
   renderer.prepareFrame();
   shader.bind();
@@ -110,21 +89,10 @@ addEventListener('resize', () => {
   gl.viewport(0, 0, canvas.width, canvas.height);
 });
 
-addEventListener('mousemove', ({x, y}) => {
-  const clipX = x / innerWidth * 2 - 1;
-  const clipY = y / innerHeight * 2 - 1;
-  const invProjView = glMatrix.mat4.create();
-  const output = [0, 0, 0, 0];
-  glMatrix.mat4.invert(invProjView, renderer.getProjView());
-  glMatrix.vec4.transformMat4(output, [clipX, clipY, 0, 0], invProjView);
-  mouse.x = output[0] * 10;
-  mouse.y = output[1] * -10;
+addEventListener('keydown', ({keyCode}) => {
+  keys[keyCode] = true;
 });
 
-addEventListener('mousedown', () => {
-  mouse.down = true;
-});
-
-addEventListener('mouseup', () => {
-  mouse.down = false;
+addEventListener('keyup', ({keyCode}) => {
+  keys[keyCode] = false;
 });

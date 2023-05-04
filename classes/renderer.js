@@ -7,11 +7,9 @@ class Renderer {
     this.fov = 60.0;
     this.zNear = 0.001;
     this.zFar = 1000.0;
-
-    this.position = [0, 0, 10]
+    this.position = [0, 0, 5]
     this.direction = [0, 0, 0];
     this.up = [0, 1, 0];
-
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
   }
 
@@ -26,10 +24,9 @@ class Renderer {
 
     entities.forEach(e => {
       shader.setMatrix('model', e.getModel());
-      shader.setVec3('quadColor', e.getColor());
       gl.drawElements(gl.TRIANGLES, model[2], gl.UNSIGNED_SHORT, 0);
     });
-    
+
     gl.disableVertexAttribArray(0);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
     gl.bindVertexArray(null);
