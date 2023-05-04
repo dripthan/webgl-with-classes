@@ -1,16 +1,20 @@
 
-// global
+// shader code
 
 const vsSource = `#version 300 es
 
-in vec3 vPosition;
-in vec3 vColor;
+layout(location = 0) in vec2 vPosition;
+layout(location = 1) in vec3 vColor;
 
 out vec3 fColor;
 
+uniform mat4 proj;
+uniform mat4 view;
+uniform mat4 model;
+
 void main()
 {
-  gl_Position = vec4(vPosition, 1.0);
+  gl_Position = proj * view * model * vec4(vPosition, 0.0, 1.0);
   fColor = vColor;
 }
 
@@ -31,63 +35,65 @@ void main()
 
 `;
 
-const positions = [
-  0.0,  0.5, 0.0,
- -0.5, -0.5, 0.0,
-  0.5, -0.5, 0.0
+// primative quad attributes
+
+const quadPositions = [
+   0.5,  0.5,
+   0.5, -0.5,
+  -0.5, -0.5,
+  -0.5,  0.5
 ];
 
-const colors = [
-  1.0, 1.0, 0.0,
+const quadColors = [
+  0.0, 0.0, 1.0,
+  0.0, 1.0, 0.0,
   0.0, 1.0, 1.0,
-  1.0, 0.0, 1.0
+  1.0, 0.0, 0.0
 ];
+
+const quadIndices = [
+  0, 1, 3,
+  1, 2, 3
+];
+
+// variables
 
 const canvas = document.querySelector('canvas');
 const gl = canvas.getContext('webgl2');
-const program = new Program(vsSource, fsSource);
-const loader = new Loader(program.getID());
-const model = loader.loadVAO(positions, colors);
+const shader = new Shader(vsSource, fsSource);
+const loader = new Loader();
+const renderer = new Renderer();
+const quad = loader.loadVAO(quadPositions, quadColors, quadIndices);
+const entity = new Entity(0, 0, 0, 0.1);
 
-(() => {
+// loop
 
-  // loop
+const loop = () => {
 
-  const loop = () => {
+  entity.x += 0.001;
+  entity.rot += 0.01;
 
-    // clear
+  renderer.prepareFrame();
+  shader.bind();
+  shader.setMatrix('proj', renderer.getProj());
+  shader.setMatrix('view', renderer.getView());
+  renderer.renderEntities([entity], quad, shader);
+  shader.unbind();
 
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  requestAnimationFrame(loop);
+};
 
-    // draw
+// events
 
-    gl.bindVertexArray(model);
-    program.bind()
-    program.bindAttribs();
+addEventListener('load', () => {
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  requestAnimationFrame(loop);
+});
 
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
-
-    program.unbindAttribs();
-    program.unbind()
-    gl.bindVertexArray(null);
-
-    requestAnimationFrame(loop);
-  };
-
-  // events
-
-  addEventListener('load', () => {
-    canvas.width = innerWidth;
-    canvas.height = innerHeight;
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    requestAnimationFrame(loop);
-  });
-
-  addEventListener('resize', () => {
-    canvas.width = innerWidth;
-    canvas.height = innerHeight;
-    gl.viewport(0, 0, canvas.width, canvas.height);
-  });
-
-})();
+addEventListener('resize', () => {
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+  gl.viewport(0, 0, canvas.width, canvas.height);
+});

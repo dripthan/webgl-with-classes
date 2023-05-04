@@ -3,27 +3,32 @@
 
 class Loader {
 
-  constructor(program) {
-    this.program = program;
-  }
+  constructor() {}
 
-  loadVAO(positions, colors) {
+  loadVAO(positions, colors, indices) {
     const vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
-    this.loadBuffer(positions, 3, 'vPosition');
-    this.loadBuffer(colors, 3, 'vColor');
+    this.loadVBO(0, 2, positions, false);
+    this.loadVBO(1, 3, colors, false);
     gl.bindVertexArray(null);
-    return vao;
+    const ebo = this.loadEBO(indices);
+    return [vao, ebo, indices.length];
   }
 
-  loadBuffer(data, size, location) {
-    const attribLoc = gl.getAttribLocation(this.program, location);
-    const posBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
-    gl.enableVertexAttribArray(attribLoc);
+  loadVBO(location, size, data, normalized) {
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
-    gl.vertexAttribPointer(attribLoc, size, gl.FLOAT, false, 0, 0);
-    gl.disableVertexAttribArray(attribLoc);
+    gl.vertexAttribPointer(location, size, gl.FLOAT, normalized, 0, 0);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    return buffer;
+  }
+
+  loadEBO(data) {
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(data), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+    return buffer;
   }
 }
