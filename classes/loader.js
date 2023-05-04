@@ -5,11 +5,10 @@ class Loader {
 
   constructor() {}
 
-  loadVAO(positions, colors, indices) {
+  loadVAO(positions, indices) {
     const vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
     this.loadVBO(0, 2, positions, false);
-    this.loadVBO(1, 3, colors, false);
     gl.bindVertexArray(null);
     const ebo = this.loadEBO(indices);
     return [vao, ebo, indices.length];
