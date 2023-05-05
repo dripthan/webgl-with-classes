@@ -4,9 +4,9 @@
 const vsSource = `#version 300 es
 
 layout(location = 0) in vec2 vPosition;
+layout(location = 1) in mat4 model;
 
 uniform mat4 projView;
-uniform mat4 model;
 
 void main()
 {
@@ -52,14 +52,31 @@ const shader = new Shader(vsSource, fsSource);
 const loader = new Loader();
 const renderer = new Renderer();
 const quad = loader.loadVAO(quadPositions, quadIndices);
-const entities = [new Entity(
+const entities = [];
+entities.push(new Entity(
   [0, 0, 0],
   [0, 0, 0],
   [1, 1, 1],
   [0, 0, 0],
-  [0, 0.02, 0.01],
+  [0, 0.002, 0.001],
   [0, 0, 0]
-)];
+));
+entities.push(new Entity(
+  [2, 0, 0],
+  [0, 0, 0],
+  [1, 1, 1],
+  [0, 0, 0],
+  [0.001, -0.002, 0],
+  [0, 0, 0]
+));
+entities.push(new Entity(
+  [-2, 0, 0],
+  [0, 0, 0],
+  [1, 1, 1],
+  [0, 0, 0],
+  [0.001, 0, -0.002],
+  [0, 0, 0]
+));
 
 // loop
 
@@ -68,7 +85,7 @@ const loop = () => {
   renderer.prepareFrame();
   shader.bind();
   shader.setMatrix('projView', renderer.getProjView());
-  renderer.renderEntities(entities, quad, shader);
+  renderer.renderEntities(entities, quad);
   shader.unbind();
 
   requestAnimationFrame(loop);

@@ -9,9 +9,10 @@ class Loader {
     const vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
     this.loadVBO(0, 2, positions, false);
+    const modelMatrixBuffer = this.loadMBO(1);
     gl.bindVertexArray(null);
     const ebo = this.loadEBO(indices);
-    return [vao, ebo, indices.length];
+    return [vao, ebo, indices.length, modelMatrixBuffer];
   }
 
   loadVBO(location, size, data, normalized) {
@@ -21,6 +22,17 @@ class Loader {
     gl.vertexAttribPointer(location, size, gl.FLOAT, normalized, 0, 0);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     return buffer;
+  }
+
+  loadMBO(location) {
+    const matrixVBO = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, matrixVBO);
+    for (let i = 0; i < 4; i++) {
+      gl.vertexAttribPointer(location + i, 4, gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * 16, Float32Array.BYTES_PER_ELEMENT * 4 * i);
+      gl.vertexAttribDivisor(location + i, 1);
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    return matrixVBO;
   }
 
   loadEBO(data) {

@@ -17,16 +17,32 @@ class Renderer {
     gl.clear(gl.COLOR_BUFFER_BIT);
   }
 
-  renderEntities(entities, model, shader) {
+  renderEntities(entities, model) {
     gl.bindVertexArray(model[0]);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model[1]);
     gl.enableVertexAttribArray(0);
+    gl.enableVertexAttribArray(1);
+    gl.enableVertexAttribArray(2);
+    gl.enableVertexAttribArray(3);
+    gl.enableVertexAttribArray(4);
 
-    entities.forEach(e => {
-      shader.setMatrix('model', e.getModel());
-      gl.drawElements(gl.TRIANGLES, model[2], gl.UNSIGNED_SHORT, 0);
-    });
+    const matrixData = new Float32Array(16 * entities.length);
+    for (let i = 0; i < entities.length; i++) {
+      for (let j = 0; j < 16; j++) {
+        matrixData[16 * i + j] = entities[i].getModel()[j];
+      }
+    }
 
+    gl.bindBuffer(gl.ARRAY_BUFFER, model[3]);
+    gl.bufferData(gl.ARRAY_BUFFER, matrixData, gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    gl.drawElementsInstanced(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0, entities.length);
+
+    gl.disableVertexAttribArray(4);
+    gl.disableVertexAttribArray(3);
+    gl.disableVertexAttribArray(2);
+    gl.disableVertexAttribArray(1);
     gl.disableVertexAttribArray(0);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
     gl.bindVertexArray(null);
