@@ -32,9 +32,4 @@ class Shader {
     const location = gl.getUniformLocation(this.program, name);
     gl.uniformMatrix4fv(location, false, value);
   }
-
-  setVec3(name, value) {
-    const location = gl.getUniformLocation(this.program, name);
-    gl.uniform3fv(location, value);
-  }
 }

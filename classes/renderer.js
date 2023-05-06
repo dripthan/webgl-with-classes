@@ -10,6 +10,7 @@ class Renderer {
     this.position = [0, 0, 5]
     this.direction = [0, 0, 0];
     this.up = [0, 1, 0];
+    this.matrixData = new Float32Array(16 * 1000000);
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
   }
 
@@ -18,33 +19,33 @@ class Renderer {
   }
 
   renderEntities(entities, model) {
-    gl.bindVertexArray(model[0]);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model[1]);
+
+    for (let i = 0; i < entities.length; i++) {
+      for (let j = 0; j < 16; j++) {
+        this.matrixData[16 * i + j] = entities[i].getModel()[j];
+      }
+    }
+
+    gl.bindVertexArray(model.vao);
     gl.enableVertexAttribArray(0);
     gl.enableVertexAttribArray(1);
     gl.enableVertexAttribArray(2);
     gl.enableVertexAttribArray(3);
     gl.enableVertexAttribArray(4);
 
-    const matrixData = new Float32Array(16 * entities.length);
-    for (let i = 0; i < entities.length; i++) {
-      for (let j = 0; j < 16; j++) {
-        matrixData[16 * i + j] = entities[i].getModel()[j];
-      }
-    }
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, model[3]);
-    gl.bufferData(gl.ARRAY_BUFFER, matrixData, gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, model.modelMatrixBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, this.matrixData, gl.DYNAMIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-    gl.drawElementsInstanced(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0, entities.length);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.ebo);
+    gl.drawElementsInstanced(gl.LINE_LOOP, model.numIndices, gl.UNSIGNED_SHORT, 0, entities.length);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
     gl.disableVertexAttribArray(4);
     gl.disableVertexAttribArray(3);
     gl.disableVertexAttribArray(2);
     gl.disableVertexAttribArray(1);
     gl.disableVertexAttribArray(0);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
     gl.bindVertexArray(null);
   }
 

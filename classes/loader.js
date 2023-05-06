@@ -9,10 +9,10 @@ class Loader {
     const vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
     this.loadVBO(0, 2, positions, false);
-    const modelMatrixBuffer = this.loadMBO(1);
+    const modelMatrixBuffer = this.loadMatrixAttrib(1);
     gl.bindVertexArray(null);
     const ebo = this.loadEBO(indices);
-    return [vao, ebo, indices.length, modelMatrixBuffer];
+    return new Model(vao, ebo, indices.length, modelMatrixBuffer);
   }
 
   loadVBO(location, size, data, normalized) {
@@ -24,15 +24,26 @@ class Loader {
     return buffer;
   }
 
-  loadMBO(location) {
+  loadMatrixAttrib(location) {
     const matrixVBO = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, matrixVBO);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(), gl.DYNAMIC_DRAW);
     for (let i = 0; i < 4; i++) {
       gl.vertexAttribPointer(location + i, 4, gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * 16, Float32Array.BYTES_PER_ELEMENT * 4 * i);
       gl.vertexAttribDivisor(location + i, 1);
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     return matrixVBO;
+  }
+
+  loadVectorAttrib(location) {
+    const vbo = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(), gl.DYNAMIC_DRAW);
+    gl.vertexAttribPointer(location, 3, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribDivisor(location, 1);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    return vbo;
   }
 
   loadEBO(data) {

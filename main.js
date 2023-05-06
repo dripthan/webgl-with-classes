@@ -11,7 +11,6 @@ uniform mat4 projView;
 void main()
 {
   gl_Position = projView * model * vec4(vPosition, 0.0, 1.0);
-  gl_PointSize = 10.0;
 }
 
 `;
@@ -58,29 +57,40 @@ entities.push(new Entity(
   [0, 0, 0],
   [1, 1, 1],
   [0, 0, 0],
-  [0, 0.002, 0.001],
+  [0.1, 0.1, 0],
+  [0, 0, 0],
   [0, 0, 0]
 ));
 entities.push(new Entity(
-  [2, 0, 0],
+  [-1.5, 0, 0],
   [0, 0, 0],
   [1, 1, 1],
   [0, 0, 0],
-  [0.001, -0.002, 0],
+  [0.1, 0, 0.1],
+  [0, 0, 0],
   [0, 0, 0]
 ));
 entities.push(new Entity(
-  [-2, 0, 0],
+  [1.5, 0, 0],
   [0, 0, 0],
   [1, 1, 1],
   [0, 0, 0],
-  [0.001, 0, -0.002],
+  [0, 0.1, 0.1],
+  [0, 0, 0],
   [0, 0, 0]
 ));
 
 // loop
 
 const loop = () => {
+
+  document.title = entities.length;
+
+  for (let i = entities.length - 1; i >= 0; --i) {
+    const e = entities[i];
+    e.tick();
+    if (e.dead) entities.splice(i, 1);
+  }
 
   renderer.prepareFrame();
   shader.bind();
